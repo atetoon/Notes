@@ -22,7 +22,7 @@
 
 - [x] Web Security Fundamentals
 
-- [ ] User Authentication and Authorization
+- [x] User Authentication and Authorization
 
 - [ ] Data Security
 

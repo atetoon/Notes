@@ -1,4 +1,4 @@
-## **<font color="#f79646">to cook today (13-july)</font>** 🍳
+## **<font color="#f79646">to cook today (14-july)</font>** 🍳
 
-- [ ] codeforces problems (4 problems)
-- [ ] auth unit
+- [x] codeforces problems (4 problems)
+- [x] auth 2.0 finish

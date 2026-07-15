@@ -5676,3 +5676,2823 @@ Database
 |Sinon.js|Spy/Stub library|
 |CIA|Confidentiality, Integrity, Availability|
 |OWASP|Top web security risks|
+
+# Authentication & Security
+
+---
+
+## 1. Authentication, Authorization & Encryption
+
+### 1.1 Authentication
+
+#### Definition
+Authentication verifies **who a user is**.
+
+#### Authentication Factors
+- Knowledge → Password, PIN
+- Possession → OTP, Phone, Security Token
+- Inherence → Fingerprint, Face ID
+
+#### Types
+- **SFA (Single-Factor Authentication)** → One authentication factor.
+- **MFA (Multi-Factor Authentication)** → Two or more authentication factors.
+
+---
+
+### 1.2 Authorization
+
+#### Definition
+Authorization determines **what an authenticated user is allowed to do**.
+
+Examples:
+- Admin → Manage users
+- User → Edit own profile
+
+---
+
+### 1.3 Encryption
+
+#### Definition
+Encryption converts readable data (plaintext) into unreadable ciphertext.
+
+#### Symmetric Encryption
+- Same key encrypts & decrypts.
+- Faster.
+- Example: AES
+
+#### Asymmetric Encryption
+- Public key encrypts.
+- Private key decrypts.
+- Used in HTTPS, SSL/TLS.
+
+---
+
+### 1.4 Password Evolution
+
+#### Plaintext Passwords ❌
+Passwords stored directly.
+
+#### Password Hashing ✅
+Passwords stored as hashes instead of plaintext.
+
+#### Salted Password Hashes ✅
+Random salt added before hashing.
+Prevents rainbow table attacks.
+
+---
+
+### 1.5 OTP (One-Time Password)
+
+#### Definition
+Temporary password valid for a single login/session.
+
+#### Sources
+- SMS
+- Email
+- Authenticator Apps
+
+---
+
+### 1.6 PKI (Public Key Infrastructure)
+
+#### Purpose
+Verifies website identity and enables secure communication.
+
+#### Uses
+- HTTPS
+- SSL/TLS Certificates
+
+---
+
+### 1.7 SSO (Single Sign-On)
+
+#### Definition
+Login once and access multiple applications.
+
+Examples:
+- Sign in with Google
+- GitHub
+- Facebook
+- Microsoft
+
+---
+
+### 1.8 OAuth 2.0
+
+#### Definition
+Authorization framework that lets third-party applications access user resources **without knowing the user's password**.
+
+#### Flow
+
+```text
+User
+   │
+   ▼
+OAuth Provider
+   │
+   ▼
+Authorization Token
+   │
+   ▼
+Third-party Application
+```
+
+---
+
+## 2. Session Authentication with Express.js
+
+### 2.1 HTTP Statelessness
+
+#### Stateless Protocol
+HTTP treats every request independently.
+
+Sessions are used to remember users across requests.
+
+---
+
+### 2.2 Why Sessions?
+
+Sessions remember:
+- Logged-in users
+- Shopping carts
+- User preferences
+
+---
+
+### 2.3 Sessions
+
+#### Definition
+Server-side storage that stores user information.
+
+Example:
+
+```js
+req.session = {
+    authenticated: true,
+    user: {
+        username: "dhruv"
+    }
+}
+```
+
+---
+
+### 2.4 Session Flow
+
+```text
+User Login
+      │
+      ▼
+Verify Credentials
+      │
+      ▼
+Create Session
+      │
+      ▼
+Generate Session ID
+      │
+      ▼
+Store Session on Server
+      │
+      ▼
+Send Session ID Cookie
+      │
+      ▼
+Browser Stores Cookie
+      │
+      ▼
+Every Request Sends Cookie
+      │
+      ▼
+Server Retrieves Session
+```
+
+---
+
+### 2.5 Cookies
+
+#### Definition
+Small browser storage used to store the **Session ID**.
+
+Example
+
+```http
+Set-Cookie: sessionID=abc123
+```
+
+---
+
+### 2.6 Cookie Security
+
+#### HttpOnly
+- Prevents JavaScript access.
+- Protects against XSS.
+
+#### Secure
+- Cookie sent only over HTTPS.
+
+#### SameSite
+- Helps prevent CSRF attacks.
+
+#### maxAge / Expires
+- Defines cookie lifetime.
+
+---
+
+### 2.7 localStorage vs sessionStorage vs Cookies
+
+| Feature | Cookies | localStorage | sessionStorage |
+|---------|---------|--------------|----------------|
+| Size | ~4 KB | ~5 MB | ~5 MB |
+| Sent with HTTP Requests | ✅ | ❌ | ❌ |
+| Lifetime | Configurable | Until cleared | Until tab closes |
+| Best Use | Authentication | Persistent data | Temporary data |
+
+---
+
+### 2.8 Session Security
+
+#### Session Hijacking
+Attacker steals a Session ID to impersonate a user.
+
+#### Prevention
+- HTTPS
+- HttpOnly
+- Secure Cookies
+- SameSite
+- Random Session IDs
+- Short Session Timeout
+
+---
+
+### 2.9 express-session
+
+#### Installation
+
+```bash
+npm install express-session
+```
+
+#### Import
+
+```js
+import session from "express-session";
+```
+
+#### Basic Configuration
+
+```js
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false
+  })
+);
+```
+
+#### Important Options
+
+- `secret` → Signs session cookie.
+- `resave` → Saves session only when modified.
+- `saveUninitialized` → Doesn't save empty sessions.
+
+---
+
+### 2.10 Session Stores
+
+#### Development
+- MemoryStore
+
+#### Production
+- Redis ✅
+- PostgreSQL
+- MySQL
+- MongoDB
+
+---
+
+### 2.11 Cookie Configuration
+
+```js
+cookie: {
+    maxAge: 1000 * 60 * 60 * 24,
+    secure: true,
+    httpOnly: true,
+    sameSite: "none"
+}
+```
+
+---
+
+### 2.12 Login with Sessions
+
+```js
+req.session.authenticated = true;
+
+req.session.user = {
+    username
+};
+```
+
+> Never store passwords in sessions.
+
+---
+
+### 2.13 Accessing Session Data
+
+#### Store
+
+```js
+req.session.user.cartCount = 2;
+```
+
+#### Read
+
+```js
+req.session.user.cartCount;
+```
+
+---
+
+### 2.14 Protecting Routes
+
+#### Authentication Middleware
+
+```js
+function ensureAuthentication(req, res, next) {
+    if (req.session.authenticated) {
+        next();
+    } else {
+        res.status(403).send("Unauthorized");
+    }
+}
+```
+
+Usage:
+
+```js
+app.get("/profile", ensureAuthentication, (req, res) => {
+    res.send("Protected Route");
+});
+```
+
+---
+
+### 2.15 Complete Authentication Flow
+
+```text
+User Login
+      │
+      ▼
+Verify Credentials
+      │
+      ▼
+Create Session
+      │
+      ▼
+Store Session on Server
+      │
+      ▼
+Send Session ID Cookie
+      │
+      ▼
+Browser Stores Cookie
+      │
+      ▼
+Every Request Sends Cookie
+      │
+      ▼
+Server Validates Session
+      │
+      ▼
+Protected Route Access
+```
+
+---
+
+# Quick Revision ⭐
+
+- Authentication → Who are you?
+- Authorization → What can you do?
+- Encryption → Protects data
+- SFA → One authentication factor
+- MFA → Multiple authentication factors
+- PKI → Verifies website identity
+- SSO → One login for multiple applications
+- OAuth 2.0 → Token-based authorization
+- Session → Server-side user data
+- Cookie → Stores Session ID
+- HttpOnly → Prevents XSS
+- Secure → HTTPS only
+- SameSite → Helps prevent CSRF
+- express-session → Express middleware for sessions
+- MemoryStore → Development only
+- Redis / Database Store → Production
+- Session Hijacking → Stolen Session ID used to impersonate a user
+
+
+# 3. JSON Web Tokens (JWT)
+
+---
+
+## 3. Introduction
+
+### 3.1 What is a JWT?
+
+#### Definition
+A **JSON Web Token (JWT)** is a compact, self-contained token used to securely transmit information between two parties.
+
+- Stateless authentication
+- Digitally signed
+- Tamper detection
+- Commonly used for authentication and authorization
+
+---
+
+### 3.2 Why JWT?
+
+JWTs are used for:
+
+- Authentication
+- Authorization
+- Single Sign-On (SSO)
+- Secure information exchange
+
+Advantages:
+- Compact
+- Fast
+- Easy to transmit
+- Platform independent
+- Works well with APIs
+
+Limitations:
+- Cannot revoke easily before expiration
+- Should not store sensitive information
+- Adds complexity with public/private key authentication
+
+---
+
+## 4. JWT Structure
+
+A JWT consists of **three parts** separated by dots.
+
+```text
+Header.Payload.Signature
+```
+
+Example
+
+```text
+xxxxx.yyyyy.zzzzz
+```
+
+---
+
+### 4.1 Header
+
+#### Purpose
+Contains metadata about the token.
+
+Contains:
+- Token type
+- Signing algorithm
+
+Example
+
+```json
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+```
+
+Common Algorithms:
+
+- HS256
+- RS256
+- ES256
+
+---
+
+### 4.2 Payload
+
+#### Purpose
+Contains information (claims) about the user.
+
+Example
+
+```json
+{
+  "sub": "123456789",
+  "name": "Harine Cooper",
+  "admin": false,
+  "iat": 1620924478,
+  "exp": 1620939187
+}
+```
+
+---
+
+#### Types of Claims
+
+##### Registered Claims
+Standard claims defined by JWT specification.
+
+Examples:
+- `sub` → Subject
+- `iat` → Issued At
+- `exp` → Expiration Time
+- `iss` → Issuer
+- `aud` → Audience
+
+---
+
+##### Public Claims
+
+Custom claims registered publicly.
+
+Example:
+
+```json
+{
+  "role": "admin"
+}
+```
+
+---
+
+##### Private Claims
+
+Custom claims shared only between specific applications.
+
+Example:
+
+```json
+{
+  "department": "Engineering"
+}
+```
+
+---
+
+### 4.3 Signature
+
+#### Purpose
+
+Ensures the token has **not been modified**.
+
+Generated using:
+
+```text
+Encoded Header
++
+Encoded Payload
++
+Secret Key
++
+Hashing Algorithm
+```
+
+Example
+
+```text
+HMACSHA256(
+Base64Url(Header) + "." +
+Base64Url(Payload),
+Secret
+)
+```
+
+If Header or Payload changes,
+the Signature becomes invalid.
+
+---
+
+## 5. JWT Format
+
+```text
+Header
+      │
+      ▼
+Base64URL Encode
+
+Payload
+      │
+      ▼
+Base64URL Encode
+
+Header.Payload
+      │
+      ▼
+Hash with Secret
+      │
+      ▼
+Signature
+
+Final JWT
+
+Header.Payload.Signature
+```
+
+---
+
+## 6. JWT Authentication Flow
+
+### 6.1 Login
+
+```text
+User Login
+      │
+      ▼
+Server verifies credentials
+```
+
+---
+
+### 6.2 Token Creation
+
+```text
+Server
+      │
+Creates JWT
+      │
+Signs JWT
+      │
+Returns JWT
+```
+
+---
+
+### 6.3 Sending JWT
+
+Browser sends JWT in every request.
+
+```http
+Authorization: Bearer <JWT>
+```
+
+Example
+
+```http
+Authorization:
+Bearer eyJhbGc...
+```
+
+---
+
+### 6.4 Verification
+
+Server:
+
+- Verifies signature
+- Checks expiration
+- Reads payload
+- Returns response
+
+---
+
+### Complete JWT Flow
+
+```text
+User Login
+      │
+      ▼
+Verify Credentials
+      │
+      ▼
+Create JWT
+      │
+      ▼
+Return JWT
+      │
+      ▼
+Browser Stores JWT
+      │
+      ▼
+Authorization: Bearer <JWT>
+      │
+      ▼
+Server Verifies JWT
+      │
+      ▼
+Protected Resource
+```
+
+---
+
+## 7. JWT Storage
+
+### 7.1 Recommended
+
+Store JWT securely.
+
+Common approaches:
+
+- Secure HttpOnly Cookies ✅
+- In-memory storage (SPA)
+
+---
+
+### 7.2 Avoid localStorage ❌
+
+Reason:
+- Vulnerable to XSS attacks.
+
+---
+
+### 7.3 Cookie Considerations
+
+Cookies should be:
+
+- HttpOnly
+- Secure
+- SameSite
+
+Otherwise they may be vulnerable to CSRF.
+
+---
+
+## 8. JWT Security
+
+### Do
+
+- Use HTTPS
+- Set expiration (`exp`)
+- Verify signature
+- Use strong secrets
+- Rotate secrets when needed
+
+---
+
+### Don't
+
+- Store passwords inside JWT
+- Store sensitive personal information
+- Trust payload without verifying signature
+- Store JWT in localStorage for sensitive apps
+
+---
+
+## 9. JWT vs Sessions
+
+| Feature | Sessions | JWT |
+|----------|----------|-----|
+| Storage | Server | Client |
+| Stateful | ✅ | ❌ |
+| Server Memory | Required | Not Required |
+| Scalability | Lower | Higher |
+| Revocation | Easy | Hard |
+| Best For | Traditional Web Apps | REST APIs & Microservices |
+
+---
+
+## 10. Common JWT Claims
+
+| Claim | Meaning |
+|--------|---------|
+| `sub` | Subject (User ID) |
+| `iat` | Issued At |
+| `exp` | Expiration Time |
+| `iss` | Issuer |
+| `aud` | Audience |
+
+---
+
+# Quick Revision ⭐
+
+- JWT → JSON Web Token
+- Stateless authentication
+- Three parts → Header.Payload.Signature
+- Header → Algorithm + Token Type
+- Payload → User Claims
+- Signature → Prevents tampering
+- Claims → Registered, Public, Private
+- Authorization Header → `Bearer <JWT>`
+- Verify signature before trusting payload
+- Don't store passwords in JWT
+- Avoid localStorage for sensitive applications
+- Sessions → Server-side
+- JWT → Client-side token
+
+## 4. Data Security Concepts
+
+### 4.1 Encryption
+
+Converts readable data into unreadable ciphertext.
+
+Requires a key for decryption.
+
+#### Types
+
+##### Symmetric Encryption
+
+- Same key encrypts & decrypts
+- Faster
+- Best for large data
+
+##### Asymmetric Encryption
+
+- Public key encrypts
+- Private key decrypts
+- More secure
+- Slower
+- Used in HTTPS, SSL/TLS
+
+---
+
+### 4.2 Hashing
+
+One-way mathematical function.
+
+Cannot be reversed.
+
+#### Characteristics
+
+- Fixed-length output
+- Used for verification
+- Used for password storage
+
+Example
+
+```
+Password
+      │
+      ▼
+SHA-256
+      │
+      ▼
+Hash
+```
+
+---
+
+#### Hash Collision
+
+Occurs when two different inputs produce the same hash.
+
+Modern algorithms (SHA-256) make collisions practically impossible.
+
+Older algorithms:
+
+- MD5 ❌
+- SHA-1 ❌
+
+---
+
+#### Password Hashing
+
+Never store plaintext passwords.
+
+Store only hashed passwords.
+
+---
+
+### 4.3 Encoding
+
+Transforms data into another format.
+
+Purpose:
+
+- Compatibility
+- Data representation
+
+Examples
+
+- ASCII
+- Unicode
+- Base64
+
+Encoding is reversible.
+
+---
+
+### 4.4 Obfuscation
+
+Makes code difficult to understand.
+
+Purpose:
+
+- Protect intellectual property
+- Prevent reverse engineering
+- Hide implementation details
+
+Not intended for encrypting data.
+
+---
+
+### 4.5 Comparison
+
+| Technique   | Reversible   | Purpose                           |
+| ----------- | ------------ | --------------------------------- |
+| Encryption  | ✅ Yes        | Protect data                      |
+| Hashing     | ❌ No         | Verify integrity, store passwords |
+| Encoding    | ✅ Yes        | Data representation               |
+| Obfuscation | ⚠️ Partially | Hide code logic                   |
+## 5. Passport.js Local Authentication
+
+### 5.1 What is Passport.js?
+
+Passport.js is an authentication middleware for **Node.js + Express**.
+
+It simplifies implementing authentication using different **strategies**.
+
+Examples of strategies:
+
+- Local (Username & Password)
+- Google OAuth
+- Facebook
+- GitHub
+- Twitter
+- JWT
+
+---
+
+### 5.2 Passport Installation
+
+```
+npm install passport passport-local
+```
+
+Import:
+
+```
+const passport = require("passport");
+const LocalStrategy = require("passport-local").Strategy;
+```
+
+---
+
+### 5.3 Passport Configuration
+
+Initialize Passport:
+
+```
+app.use(passport.initialize());
+```
+
+Enable persistent login sessions:
+
+```
+app.use(passport.session());
+```
+
+---
+
+### 5.4 Local Strategy
+
+Authenticates users using username and password.
+
+```
+passport.use(
+  new LocalStrategy((username, password, done) => {
+    // Verify credentials
+  })
+);
+```
+
+Parameters:
+
+- `username`
+- `password`
+- `done()`
+
+---
+
+### 5.5 Authentication Process
+
+Authentication flow:
+
+```
+User Login
+      │
+      ▼
+Find user by username
+      │
+      ▼
+User exists?
+      │
+ ┌────┴────┐
+ │         │
+No        Yes
+ │         │
+done()   Check Password
+           │
+     ┌─────┴─────┐
+     │           │
+ Invalid      Valid
+     │           │
+ done()     done(user)
+```
+
+---
+
+### 5.6 The `done()` Callback
+
+Syntax:
+
+```
+done(error, user);
+```
+
+Cases:
+
+```
+done(err);
+```
+
+Database error.
+
+```
+done(null, false);
+```
+
+Authentication failed.
+
+```
+done(null, user);
+```
+
+Authentication successful.
+
+---
+
+### 5.7 Database Lookup
+
+Passport doesn't search the database itself.
+
+You provide the lookup function.
+
+Example:
+
+```
+db.users.findByUsername(username, callback);
+```
+
+The database searches for the matching username and returns:
+
+- Error
+- User object
+- No user
+
+---
+
+### 5.8 Serializing Users
+
+Stores only the user ID inside the session.
+
+```
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+```
+
+Session:
+
+```
+req.session.passport.user = {
+    id: 7
+}
+```
+
+Purpose:
+
+- Smaller session
+- Better security
+- Less memory usage
+
+---
+
+### 5.9 Deserializing Users
+
+Runs on every authenticated request.
+
+```
+passport.deserializeUser((id, done) => {
+    db.users.findById(id, (err, user) => {
+        done(err, user);
+    });
+});
+```
+
+Purpose:
+
+- Retrieve full user object
+- Attach it to:
+
+```
+req.user
+```
+
+---
+
+### 5.10 Login Route
+
+Passport middleware authenticates automatically.
+
+```
+app.post(
+    "/login",
+    passport.authenticate("local", {
+        failureRedirect: "/login"
+    }),
+    (req, res) => {
+        res.redirect("/profile");
+    }
+);
+```
+
+If authentication succeeds:
+
+- User serialized
+- Session created
+- Cookie sent
+
+---
+
+### 5.11 Protected Routes
+
+Authenticated user available everywhere.
+
+```
+req.user
+```
+
+Example:
+
+```
+app.get("/profile", (req, res) => {
+    res.render("profile", {
+        user: req.user
+    });
+});
+```
+
+---
+
+### 5.12 User Registration
+
+Create a new user.
+
+Example:
+
+```
+const newUser = await db.users.createUser({
+    username,
+    password
+});
+```
+
+If successful:
+
+```
+res.status(201).json({
+    msg: "User created",
+    newUser
+});
+```
+
+If failed:
+
+```
+res.status(500).json({
+    msg: "User not created"
+});
+```
+
+> In production, passwords should always be **hashed before storing**.
+
+---
+
+### 5.13 Logout
+
+Passport provides:
+
+```
+req.logout();
+```
+
+Example:
+
+```
+app.get("/logout", (req, res) => {
+    req.logout();
+    res.redirect("/login");
+});
+```
+
+Logout:
+
+- Removes `req.user`
+- Destroys login session
+- User must log in again
+
+---
+
+### 5.14 Complete Passport Authentication Flow
+
+```
+User Login
+      │
+      ▼
+passport.authenticate()
+      │
+      ▼
+Local Strategy
+      │
+      ▼
+Find User in Database
+      │
+      ▼
+Verify Password
+      │
+      ▼
+serializeUser()
+      │
+      ▼
+Store User ID in Session
+      │
+      ▼
+Cookie sent to Browser
+      │
+      ▼
+Future Request
+      │
+      ▼
+deserializeUser()
+      │
+      ▼
+Find User by ID
+      │
+      ▼
+Attach User to req.user
+      │
+      ▼
+Access Protected Routes
+      │
+      ▼
+Logout
+      │
+      ▼
+req.logout()
+      │
+      ▼
+Session Destroyed
+```
+
+---
+
+## 6. Password Security with bcrypt
+
+### 6.1 Why bcrypt?
+
+Plaintext passwords should **never** be stored in a database.
+
+Instead:
+
+```text
+Password
+    │
+    ▼
+bcrypt
+    │
+    ▼
+Hash
+    │
+    ▼
+Store Hash in Database
+```
+
+bcrypt is designed specifically for password hashing and is resistant to brute-force attacks.
+
+---
+
+### 6.2 Hash Functions
+
+A hash function is **one-way**.
+
+Properties:
+
+- Cannot be reversed.
+    
+- Same input → Same hash (without salt).
+    
+- Used to verify passwords, not recover them.
+    
+
+Authentication works by comparing hashes instead of plaintext passwords.
+
+---
+
+### 6.3 Salts
+
+A **salt** is a random value added to a password before hashing.
+
+Purpose:
+
+- Prevent Rainbow Table attacks.
+    
+- Ensure identical passwords produce different hashes.
+    
+
+Example:
+
+```text
+Password: hello123
+
+User A
+Password + Salt A
+      │
+      ▼
+Hash A
+
+User B
+Password + Salt B
+      │
+      ▼
+Hash B
+```
+
+Even with the same password:
+
+```text
+Hash A ≠ Hash B
+```
+
+bcrypt automatically generates and stores salts.
+
+---
+
+### 6.4 Rainbow Table Attacks
+
+Rainbow Tables are precomputed databases of:
+
+```text
+Password → Hash
+```
+
+Attackers use them to quickly find plaintext passwords from stolen hashes.
+
+Salts make these tables ineffective because every user has a unique hash.
+
+---
+
+### 6.5 Salt Rounds (Cost Factor)
+
+Salt rounds determine how much work bcrypt performs while hashing.
+
+```text
+Higher Rounds
+      │
+      ▼
+Slower Hashing
+      │
+      ▼
+Harder to Brute Force
+```
+
+Common value:
+
+```js
+10
+```
+
+Higher values improve security but increase computation time.
+
+---
+
+### 6.6 Hashing Passwords
+
+Generate a salt:
+
+```js
+const salt = await bcrypt.genSalt(10);
+```
+
+Hash password:
+
+```js
+const hash = await bcrypt.hash(password, salt);
+```
+
+Complete flow:
+
+```text
+Password
+     │
+     ▼
+Generate Salt
+     │
+     ▼
+bcrypt Hash
+     │
+     ▼
+Store Hash
+```
+
+---
+
+### 6.7 Verifying Passwords
+
+Use:
+
+```js
+await bcrypt.compare(password, hash);
+```
+
+bcrypt automatically:
+
+- Extracts the stored salt.
+    
+- Hashes the entered password.
+    
+- Compares both hashes.
+    
+
+Returns:
+
+- `true` → Password correct
+    
+- `false` → Password incorrect
+    
+
+Authentication flow:
+
+```text
+Entered Password
+        │
+        ▼
+bcrypt.compare()
+        │
+        ▼
+Stored Hash
+        │
+ ┌──────┴──────┐
+ │             │
+true         false
+ │             │
+Login       Reject
+```
+
+---
+
+### 6.8 Using bcrypt in CRUD Applications
+
+#### Registration
+
+```text
+User Registers
+       │
+       ▼
+Receive Password
+       │
+       ▼
+Generate Salt
+       │
+       ▼
+Hash Password
+       │
+       ▼
+Store Hash in Database
+```
+
+Example:
+
+```js
+const salt = await bcrypt.genSalt(10);
+const hashedPassword = await bcrypt.hash(password, salt);
+
+const user = {
+    email,
+    password: hashedPassword
+};
+```
+
+---
+
+#### Login
+
+```text
+User Login
+      │
+      ▼
+Find User
+      │
+      ▼
+Retrieve Stored Hash
+      │
+      ▼
+bcrypt.compare()
+      │
+ ┌────┴─────┐
+ │          │
+Match    No Match
+ │          │
+Login    Reject
+```
+
+Example:
+
+```js
+const matchedPassword =
+await bcrypt.compare(
+    password,
+    user.password
+);
+```
+
+---
+
+### 6.9 Best Practices
+
+- Never store plaintext passwords.
+    
+- Always hash passwords before saving them.
+    
+- Never compare plaintext passwords directly.
+    
+- Use `bcrypt.compare()` for authentication.
+    
+- Let bcrypt manage salts automatically.
+    
+- Choose an appropriate cost factor (commonly 10–12 in many applications).
+    
+
+---
+
+### 6.10 Key Takeaways
+
+- **bcrypt** is a password hashing library.
+    
+- Hashing is **one-way**; passwords cannot be recovered from hashes.
+    
+- **Salts** protect against rainbow table attacks.
+    
+- **Salt rounds** increase resistance to brute-force attacks.
+    
+- Registration flow:
+    
+    - `genSalt()` → `hash()` → Store hash.
+        
+- Login flow:
+    
+    - `compare()` → Authenticate if it returns `true`.
+        
+- Store **only bcrypt hashes**, never plaintext passwords.
+
+# 7. JSON Web Tokens (JWT)
+
+## 7.1 What is JWT?
+
+JWT (JSON Web Token) is a compact, self-contained token used to securely transmit information between a client and a server.
+
+JWT is digitally signed, allowing the server to verify that the token has not been modified.
+
+Unlike sessions, JWT stores user information inside the token itself.
+
+---
+
+## 7.2 JWT Structure
+
+A JWT consists of three parts:
+
+```text
+Header
+      .
+Payload
+      .
+Signature
+```
+
+Example:
+
+```text
+xxxxx.yyyyy.zzzzz
+```
+
+---
+
+## 7.3 Header
+
+Contains metadata about the token.
+
+Example:
+
+```json
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+```
+
+Fields:
+
+- `alg` → Signing algorithm
+- `typ` → Token type (`JWT`)
+
+Common algorithms:
+
+- HS256
+- RS256
+- ES256
+
+---
+
+## 7.4 Payload
+
+Contains claims (information about the user).
+
+Example:
+
+```json
+{
+  "sub": "123",
+  "name": "Dhruv",
+  "admin": false,
+  "iat": 1710000000,
+  "exp": 1710003600
+}
+```
+
+Common Claims:
+
+| Claim | Meaning |
+|--------|----------|
+| sub | Subject/User ID |
+| name | User name |
+| iat | Issued At |
+| exp | Expiration Time |
+| admin | Custom claim |
+
+Types of Claims:
+
+- Registered Claims
+- Public Claims
+- Private Claims
+
+---
+
+## 7.5 Signature
+
+Used to verify that the JWT has not been modified.
+
+Generated using:
+
+```text
+Header
+      +
+Payload
+      +
+Secret Key
+      +
+Hashing Algorithm
+      ↓
+Signature
+```
+
+Example:
+
+```text
+HMACSHA256(
+Header + Payload,
+Secret
+)
+```
+
+If Header or Payload changes, the signature becomes invalid.
+
+---
+
+## 7.6 JWT Creation Flow
+
+```text
+User Login
+      │
+      ▼
+Verify Credentials
+      │
+      ▼
+Server Creates JWT
+      │
+      ▼
+Header
+Payload
+Signature
+      │
+      ▼
+JWT Returned to Client
+```
+
+---
+
+## 7.7 Using JWT
+
+Client stores the token.
+
+Every protected request sends:
+
+```http
+Authorization: Bearer <JWT>
+```
+
+Example:
+
+```http
+Authorization:
+Bearer eyJhbGc...
+```
+
+Server:
+
+```text
+Receive JWT
+      │
+      ▼
+Verify Signature
+      │
+      ▼
+Extract Payload
+      │
+      ▼
+Authorize Request
+```
+
+---
+
+## 7.8 JWT Authentication Flow
+
+```text
+User Login
+      │
+      ▼
+Server Verifies Credentials
+      │
+      ▼
+Generate JWT
+      │
+      ▼
+Send JWT
+      │
+      ▼
+Client Stores JWT
+      │
+      ▼
+Future Requests
+      │
+      ▼
+Authorization Header
+      │
+      ▼
+Server Verifies JWT
+      │
+      ▼
+Access Granted
+```
+
+---
+
+## 7.9 Important Syntax
+
+Install:
+
+```bash
+npm install jsonwebtoken
+```
+
+Import:
+
+```js
+const jwt = require("jsonwebtoken");
+```
+
+Generate Token:
+
+```js
+jwt.sign(payload, secret, options);
+```
+
+Verify Token:
+
+```js
+jwt.verify(token, secret);
+```
+
+Decode Token:
+
+```js
+jwt.decode(token);
+```
+
+---
+
+## 7.10 Storing JWT
+
+Preferred:
+
+- HttpOnly Cookies
+
+Avoid:
+
+- localStorage ❌
+
+Reason:
+
+XSS attacks can steal tokens from localStorage.
+
+---
+
+## 7.11 JWT vs Sessions
+
+| Sessions | JWT |
+|-----------|-----|
+| Server stores session | Client stores token |
+| Cookie contains Session ID | Client stores complete JWT |
+| Server memory required | Stateless |
+| Easy logout | Logout handled manually |
+| Better for traditional web apps | Better for APIs & mobile apps |
+
+---
+
+## 7.12 Uses of JWT
+
+- Authentication
+- Authorization
+- Single Sign-On (SSO)
+- Secure information exchange
+- REST APIs
+
+---
+
+## 7.13 Limitations
+
+- Cannot revoke easily before expiration.
+- Payload is Base64 encoded, **not encrypted**.
+- Do not store sensitive information inside the payload.
+
+---
+
+## 7.14 Key Takeaways
+
+- JWT is a self-contained authentication token.
+- Consists of Header, Payload, and Signature.
+- Signature prevents tampering.
+- Sent using the `Authorization: Bearer` header.
+- JWT is stateless; the server does not store session data.
+- Avoid storing JWTs in localStorage.
+
+# 8. OAuth 2.0
+
+## 8.1 What is OAuth 2.0?
+
+OAuth 2.0 is an **authorization framework** that allows third-party applications to access protected resources **without sharing the user's password**.
+
+Instead of passwords, OAuth uses **Access Tokens**.
+
+Example:
+
+```text
+Login with Google
+
+↓
+
+Google verifies user
+
+↓
+
+Google sends Access Token
+
+↓
+
+Website uses token to access allowed information
+```
+
+---
+
+## 8.2 Why OAuth?
+
+Without OAuth:
+
+```text
+App asks for Google Password ❌
+```
+
+With OAuth:
+
+```text
+App asks Google
+
+↓
+
+Google authenticates user
+
+↓
+
+Google returns Access Token
+
+↓
+
+App never sees password ✅
+```
+
+---
+
+## 8.3 OAuth Roles
+
+### Resource Owner
+
+The user who owns the data.
+
+Example:
+
+```text
+You
+```
+
+---
+
+### Client
+
+The application requesting access.
+
+Example:
+
+```text
+Spotify
+```
+
+---
+
+### Authorization Server
+
+Authenticates the user and issues Access Tokens.
+
+Example:
+
+```text
+Google Accounts
+GitHub
+Facebook
+```
+
+---
+
+### Resource Server
+
+Stores protected resources and verifies Access Tokens.
+
+Example:
+
+```text
+Google API
+GitHub API
+```
+
+---
+
+## 8.4 OAuth Flow
+
+```text
+User
+
+↓
+
+Client requests authorization
+
+↓
+
+Authorization Server
+
+↓
+
+User logs in
+
+↓
+
+Authorization Granted
+
+↓
+
+Access Token Generated
+
+↓
+
+Client receives Token
+
+↓
+
+Client requests Resource
+
+↓
+
+Resource Server verifies Token
+
+↓
+
+Protected Resource Returned
+```
+
+---
+
+## 8.5 Access Token
+
+An Access Token is a temporary credential used to access protected resources.
+
+Example:
+
+```text
+eyJhbGc...
+```
+
+Characteristics:
+
+- Temporary
+- Digitally signed
+- Sent with every protected request
+
+---
+
+## 8.6 Client Credentials
+
+OAuth identifies applications using:
+
+### Client ID
+
+Public identifier.
+
+Example:
+
+```text
+codecademy
+```
+
+---
+
+### Client Secret
+
+Private credential.
+
+Known only to:
+
+- Client
+- Authorization Server
+
+Never expose it publicly.
+
+---
+
+## 8.7 Install OAuth Server
+
+```bash
+npm install oauth2-server
+```
+
+Import:
+
+```js
+const OAuth2Server =
+require("oauth2-server");
+```
+
+---
+
+## 8.8 Create OAuth Server
+
+```js
+const oauth = new OAuth2Server({
+    model: require("./model"),
+    allowBearerTokensInQueryString: true,
+    accessTokenLifetime: 60 * 60
+});
+```
+
+Options:
+
+| Option | Purpose |
+|---------|----------|
+| model | Database functions |
+| allowBearerTokensInQueryString | Accept tokens in URL |
+| accessTokenLifetime | Token expiry time |
+
+---
+
+## 8.9 OAuth Model Functions
+
+OAuth2Server requires several functions.
+
+---
+
+### getClient()
+
+Finds the registered client.
+
+```js
+const getClient = (
+    clientId,
+    clientSecret
+) => {
+
+};
+```
+
+Returns:
+
+- Client
+- Undefined
+
+---
+
+### saveToken()
+
+Stores Access Token.
+
+```js
+const saveToken = (
+    token,
+    client,
+    user
+) => {
+
+};
+```
+
+Stores:
+
+```text
+Token
+
+↓
+
+Database
+```
+
+---
+
+### getUserFromClient()
+
+Returns user associated with client.
+
+```js
+const getUserFromClient =
+(client) => {
+    return {};
+};
+```
+
+Required for Client Credentials Grant.
+
+---
+
+### getAccessToken()
+
+Retrieves previously stored token.
+
+```js
+const getAccessToken =
+(accessToken) => {
+
+};
+```
+
+Used during authentication.
+
+---
+
+## 8.10 Obtaining Access Token
+
+OAuth endpoint:
+
+```text
+/auth
+```
+
+Handler:
+
+```js
+const obtainToken =
+(req, res) => {
+
+};
+```
+
+Uses:
+
+```js
+oauth.token(
+    request,
+    response
+);
+```
+
+Returns:
+
+```json
+{
+  "accessToken": "...",
+  "expiresAt": "...",
+  "client": {}
+}
+```
+
+---
+
+## 8.11 Authenticating Requests
+
+Protected routes verify tokens.
+
+Middleware:
+
+```js
+oauth.authenticate(
+    request,
+    response
+);
+```
+
+Example:
+
+```js
+app.get(
+    "/secret",
+    authenticateRequest,
+    (req, res) => {
+        res.send(
+            "Welcome!"
+        );
+    }
+);
+```
+
+---
+
+## 8.12 Authorization Header
+
+Client sends:
+
+```http
+Authorization:
+Bearer <AccessToken>
+```
+
+Example:
+
+```http
+Authorization:
+Bearer eyJhbGc...
+```
+
+---
+
+## 8.13 Complete OAuth Flow
+
+```text
+Client
+
+↓
+
+POST /auth
+
+↓
+
+Send Client ID
+
+↓
+
+Send Client Secret
+
+↓
+
+Authorization Server
+
+↓
+
+Verify Client
+
+↓
+
+Generate Access Token
+
+↓
+
+Return Token
+
+↓
+
+Client Stores Token
+
+↓
+
+Protected Request
+
+↓
+
+Authorization:
+Bearer Token
+
+↓
+
+Server Verifies Token
+
+↓
+
+Access Granted
+```
+
+---
+
+## 8.14 OAuth HTTP Requests
+
+Generate Token:
+
+```http
+POST /auth
+```
+
+Headers:
+
+```http
+Authorization:
+Basic Base64(
+ClientID:ClientSecret
+)
+```
+
+Body:
+
+```text
+grant_type=client_credentials
+```
+
+---
+
+Access Protected Resource:
+
+```http
+GET /secret
+```
+
+Header:
+
+```http
+Authorization:
+Bearer <AccessToken>
+```
+
+---
+
+## 8.15 OAuth vs JWT
+
+| OAuth | JWT |
+|--------|-----|
+| Authorization framework | Token format |
+| Issues Access Tokens | Can be used as Access Token |
+| Defines authentication flow | Stores user claims |
+| Uses multiple grant types | Just a token |
+
+OAuth often **uses JWT** as its Access Token, but they are not the same thing.
+
+---
+
+## 8.16 Key Takeaways
+
+- OAuth 2.0 allows secure authorization without sharing passwords.
+- Uses Access Tokens instead of credentials.
+- Main roles: Resource Owner, Client, Authorization Server, Resource Server.
+- Clients authenticate using Client ID and Client Secret.
+- Protected routes require `Authorization: Bearer <AccessToken>`.
+- OAuth defines the authorization process, not the token format.
+
+# 9. GitHub OAuth (Passport.js)
+
+## 9.1 What is GitHub OAuth?
+
+GitHub OAuth allows users to log into your application using their GitHub account.
+
+Instead of creating another username/password, users authenticate through GitHub.
+
+```text
+User
+
+↓
+
+Login with GitHub
+
+↓
+
+GitHub verifies user
+
+↓
+
+GitHub returns profile
+
+↓
+
+User logged into application
+```
+
+---
+
+## 9.2 Register OAuth Application
+
+Create an OAuth App in GitHub Developer Settings.
+
+Provide:
+
+- Application Name
+- Homepage URL
+- Authorization Callback URL
+
+GitHub generates:
+
+- Client ID
+- Client Secret
+
+These uniquely identify your application.
+
+---
+
+## 9.3 Environment Variables
+
+Never hardcode OAuth credentials.
+
+Store them inside `.env`.
+
+```env
+GITHUB_CLIENT_ID=xxxxxxxx
+
+GITHUB_CLIENT_SECRET=xxxxxxxx
+```
+
+---
+
+## 9.4 Required Packages
+
+Install:
+
+```bash
+npm install passport
+npm install passport-github2
+npm install express-session
+```
+
+---
+
+## 9.5 Import Packages
+
+```js
+const passport = require("passport");
+
+const GitHubStrategy =
+require("passport-github2").Strategy;
+
+const session =
+require("express-session");
+```
+
+---
+
+## 9.6 Configure Sessions
+
+```js
+app.use(
+    session({
+        secret: "codecademy",
+        resave: false,
+        saveUninitialized: false
+    })
+);
+```
+
+Initialize Passport:
+
+```js
+app.use(
+    passport.initialize()
+);
+
+app.use(
+    passport.session()
+);
+```
+
+---
+
+## 9.7 Configure GitHub Strategy
+
+```js
+passport.use(
+    new GitHubStrategy(
+        {
+            clientID:
+            process.env.GITHUB_CLIENT_ID,
+
+            clientSecret:
+            process.env.GITHUB_CLIENT_SECRET,
+
+            callbackURL:
+            "http://localhost:3000/auth/github/callback"
+        },
+
+        (
+            accessToken,
+            refreshToken,
+            profile,
+            done
+        ) => {
+
+            done(null, profile);
+
+        }
+    )
+);
+```
+
+Parameters:
+
+- accessToken
+- refreshToken
+- profile
+- done
+
+---
+
+## 9.8 Serialize User
+
+Store authenticated user in session.
+
+```js
+passport.serializeUser(
+    (user, done) => {
+
+        done(null, user);
+
+    }
+);
+```
+
+---
+
+## 9.9 Deserialize User
+
+Retrieve user from session.
+
+```js
+passport.deserializeUser(
+    (user, done) => {
+
+        done(null, user);
+
+    }
+);
+```
+
+Authenticated user becomes available as:
+
+```js
+req.user
+```
+
+---
+
+## 9.10 Login Route
+
+Redirect user to GitHub.
+
+```js
+app.get(
+
+    "/auth/github",
+
+    passport.authenticate(
+        "github",
+        {
+            scope: [
+                "user"
+            ]
+        }
+    )
+
+);
+```
+
+---
+
+## 9.11 Callback Route
+
+GitHub redirects user here after login.
+
+```js
+app.get(
+
+"/auth/github/callback",
+
+passport.authenticate(
+
+"github",
+
+{
+
+failureRedirect:
+"/login",
+
+successRedirect:
+"/"
+
+}
+
+)
+
+);
+```
+
+If successful:
+
+- Session created
+- User logged in
+
+---
+
+## 9.12 Protect Routes
+
+Middleware:
+
+```js
+function ensureAuthenticated(
+    req,
+    res,
+    next
+) {
+
+    if (
+        req.isAuthenticated()
+    ) {
+
+        return next();
+
+    }
+
+    res.redirect("/login");
+
+}
+```
+
+Usage:
+
+```js
+app.get(
+
+"/account",
+
+ensureAuthenticated,
+
+(req, res) => {
+
+    res.render(
+        "account",
+        {
+            user: req.user
+        }
+    );
+
+}
+
+);
+```
+
+---
+
+## 9.13 Authentication Flow
+
+```text
+User
+
+↓
+
+Click Login with GitHub
+
+↓
+
+/auth/github
+
+↓
+
+GitHub Login Page
+
+↓
+
+User Grants Permission
+
+↓
+
+GitHub Callback
+
+↓
+
+passport.authenticate()
+
+↓
+
+GitHub Profile Received
+
+↓
+
+serializeUser()
+
+↓
+
+Session Created
+
+↓
+
+Cookie Stored
+
+↓
+
+Future Requests
+
+↓
+
+deserializeUser()
+
+↓
+
+req.user
+
+↓
+
+Protected Routes
+```
+
+---
+
+## 9.14 OAuth vs Local Authentication
+
+| Local | GitHub OAuth |
+|--------|--------------|
+| Username & Password | GitHub Account |
+| Store passwords | No passwords stored |
+| You authenticate user | GitHub authenticates user |
+| Manage user database | GitHub manages identity |
+
+---
+
+## 9.15 Important Methods
+
+Initialize Passport
+
+```js
+passport.initialize()
+```
+
+Enable Sessions
+
+```js
+passport.session()
+```
+
+Authenticate
+
+```js
+passport.authenticate()
+```
+
+Serialize
+
+```js
+passport.serializeUser()
+```
+
+Deserialize
+
+```js
+passport.deserializeUser()
+```
+
+Logout
+
+```js
+req.logout()
+```
+
+Check Authentication
+
+```js
+req.isAuthenticated()
+```
+
+Current User
+
+```js
+req.user
+```
+
+---
+
+## 9.16 Key Takeaways
+
+- GitHub OAuth lets users log in using their GitHub account.
+- Client ID identifies the application.
+- Client Secret authenticates the application.
+- Passport handles the OAuth flow.
+- Sessions keep users logged in.
+- `req.user` contains the authenticated GitHub profile.
+- Protected routes use `req.isAuthenticated()`.
