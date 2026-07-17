@@ -24,7 +24,7 @@
 
 - [x] User Authentication and Authorization
 
-- [ ] Data Security
+- [x] Data Security
 
 - [ ] Common Attacks on Web Applications
 

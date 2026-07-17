@@ -9248,3 +9248,283 @@ Ignored by .gitignore
 - Share `example.env` instead.
     
 - Document setup in `README.md`.
+
+# Common Attacks on Web Applications — One-Page Revision
+
+## 1. SQL Injection (SQLi)
+
+- Injecting malicious SQL through user input.
+    
+- **Prevention:**
+    
+    - ✅ Parameterized/Prepared Statements
+        
+    - ✅ Validate input
+        
+    - ✅ Sanitize input
+        
+    - ✅ Least privilege database accounts
+        
+
+```javascript
+pool.query(
+  "SELECT * FROM users WHERE email = $1",
+  [email]
+);
+```
+
+---
+
+## 2. Cross-Site Scripting (XSS)
+
+**Types**
+
+- Stored XSS
+    
+- Reflected XSS
+    
+- DOM-based XSS
+    
+
+**Prevention**
+
+- ✅ Escape/sanitize output
+    
+- ✅ Validate input
+    
+- ✅ Use `textContent` instead of `innerHTML`
+    
+- ✅ Use `Helmet`
+    
+- ✅ Secure cookies (`httpOnly`, `secure`)
+    
+
+```javascript
+element.textContent = userInput;
+```
+
+---
+
+## 3. Cross-Site Request Forgery (CSRF)
+
+Attacker tricks a logged-in user into performing unwanted actions.
+
+**Prevention**
+
+- ✅ CSRF Tokens
+    
+- ✅ SameSite cookies
+    
+- ✅ Re-authentication for sensitive actions
+    
+- ✅ Secure cookies
+    
+
+---
+
+# 4. Secure Cookies
+
+```javascript
+cookie: {
+  httpOnly: true,
+  secure: true
+}
+```
+
+- **httpOnly** → JavaScript cannot read cookies.
+    
+- **secure** → Cookies sent only over HTTPS.
+    
+
+---
+
+# 5. Helmet
+
+```javascript
+app.use(helmet());
+```
+
+Adds important HTTP security headers like:
+
+- Content Security Policy (CSP)
+    
+- X-Frame-Options
+    
+- X-Content-Type-Options
+    
+
+---
+
+# 6. Defensive JavaScript
+
+### Avoid
+
+```javascript
+eval(userInput);
+```
+
+```javascript
+exec(userInput);
+```
+
+### Prefer
+
+- `execFile()`
+    
+- Safe logic instead of `eval()`
+    
+
+---
+
+### File System
+
+❌
+
+```javascript
+fs.readFileSync(userInput);
+```
+
+✅
+
+```javascript
+path.join(process.cwd(), fileName);
+```
+
+Prevents **Path Traversal**.
+
+---
+
+### Regular Expressions
+
+Avoid nested quantifiers.
+
+❌
+
+```regex
+([0-9]+)+#
+```
+
+✅
+
+```regex
+[0-9]+#
+```
+
+Use:
+
+- `validator`
+    
+- `safe-regex`
+    
+
+---
+
+### Strict Mode
+
+```javascript
+"use strict";
+```
+
+Catches:
+
+- Undeclared variables
+    
+- Duplicate parameters
+    
+- Reserved keywords
+    
+- Illegal deletions
+    
+
+---
+
+### Static Code Analysis
+
+```bash
+eslint .
+```
+
+Recommended plugin:
+
+```
+eslint-plugin-security
+```
+
+Detects:
+
+- `eval()`
+    
+- `exec()`
+    
+- Unsafe regex
+    
+- File system issues
+    
+
+---
+
+# 7. Remediation
+
+**Remediation = Fixing a security issue**
+
+Examples:
+
+- Patch vulnerabilities
+    
+- Remove malware
+    
+- Restore backups
+    
+- Block attackers
+    
+
+> Can happen **before or after** an incident.
+
+---
+
+# 8. Incident Response Lifecycle
+
+```text
+Preparation
+      ↓
+Detection
+      ↓
+Analysis
+      ↓
+Remediation
+      ↓
+Review
+```
+
+Remember:
+
+- **Preparation starts before any incident occurs.**
+    
+- Use **Incident Response Playbooks** for predefined response procedures.
+    
+
+---
+
+# Most Important Points
+
+- Always **validate + sanitize** user input.
+    
+- Use **Parameterized Queries** → Prevent SQL Injection.
+    
+- Use **`textContent`** instead of **`innerHTML`** → Prevent DOM XSS.
+    
+- Use **CSRF Tokens** → Prevent CSRF.
+    
+- Enable **Helmet** and secure cookies.
+    
+- Never use **`eval()`** on user input.
+    
+- Prefer **`execFile()`** over **`exec()`**.
+    
+- Restrict file paths using **`path.join()`**.
+    
+- Enable **`"use strict";`**.
+    
+- Run **ESLint + eslint-plugin-security**.
+    
+- Follow the **Incident Response Lifecycle**: **Preparation → Detection → Analysis → Remediation → Review**.

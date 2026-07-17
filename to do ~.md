@@ -1,6 +1,5 @@
-## **<font color="#f79646">to cook today (16-july)</font>** 🍳
+## **<font color="#f79646">to cook today (17-july)</font>** 🍳
 
 - [x] codeforces problems (4 problems)
-- [x] data security unit
-- [x] what is backend (sriniously)
-- [x] why backend
+- [x] common attack on web applications half unit
+- [ ] HTTPS requests
