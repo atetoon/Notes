@@ -2,7 +2,7 @@
 title: "Don't Let AI Think for You: A 4-Step Framework to Become a Better Developer"
 source: "https://x.com/amanntwt/status/2076259262234579241"
 author:
-  - "[[@amanntwt]]"
+  - "[[@amanntwt"
 published: 2026-07-12
 created: 2026-07-12
 description: "Hey everyone, so here’s another blog. In this blog, I am going to talk about how I got into the rabbit hole of using AI while making my proj..."
