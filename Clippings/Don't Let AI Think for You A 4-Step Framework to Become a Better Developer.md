@@ -7,7 +7,7 @@ published: 2026-07-12
 created: 2026-07-12
 description: "Hey everyone, so here’s another blog. In this blog, I am going to talk about how I got into the rabbit hole of using AI while making my proj..."
 tags:
-  - "clippings"
+  - "clipping"
 ---
 ![Image](https://pbs.twimg.com/media/HNBX9I1aQAA-ipu?format=png&name=large)
 
