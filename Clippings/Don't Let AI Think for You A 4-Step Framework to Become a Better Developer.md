@@ -25,7 +25,7 @@ So, now every time I have any problem, or any feature, or bug I have to solve, I
 
 ## Let’s see the 4 steps one by one:
 
-**1\. Stop jumping to AI first**
+**1\.. Stop jumping to AI first**
 
 Whenever you go into a problem or any bug or any new feature you want to build, just don’t go to the AI first and type the problem and get the solution.
 
